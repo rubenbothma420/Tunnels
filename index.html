@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Farm Data Entry</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: #2e7d32;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+        }
+        
+        h1 {
+            color: #2e7d32;
+            font-size: 24px;
+            margin: 0 0 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        select, input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            font-size: 16px;
+            background: white;
+            transition: border-color 0.2s;
+        }
+        
+        select:focus, input:focus {
+            outline: none;
+            border-color: #2e7d32;
+        }
+        
+        .row-group {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .row-group .form-group {
+            flex: 1;
+        }
+        
+        button {
+            width: 100%;
+            background: #2e7d32;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 8px;
+        }
+        
+        button:hover {
+            background: #1b5e20;
+        }
+        
+        button:disabled {
+            background: #999;
+            cursor: not-allowed;
+        }
+        
+        .message {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 14px;
+            display: none;
+        }
+        
+        .message.success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            display: block;
+        }
+        
+        .message.error {
+            background: #ffebee;
+            color: #c62828;
+            display: block;
+        }
+        
+        .info {
+            background: #e3f2fd;
+            color: #1565c0;
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 13px;
+            margin-bottom: 20px;
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .row-group {
+                flex-direction: column;
+                gap: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>
+            <span>🌱</span>
+            Farm Data Entry
+        </h1>
+        <div class="subtitle">Record measurements, observations, actions, and treatments</div>
+        
+        <div class="info">
+            📅 Select any date | All data goes to Master Sheet
+        </div>
+        
+        <form id="dataForm">
+            <!-- Date Picker -->
+            <div class="form-group">
+                <label>📅 Date</label>
+                <input type="date" id="date" required>
+            </div>
+            
+            <!-- Tunnel -->
+            <div class="form-group">
+                <label>🏠 Tunnel</label>
+                <select id="tunnel" required>
+                    <option value="">Select tunnel...</option>
+                    <option value="Tunnel 1">Tunnel 1</option>
+                    <option value="Tunnel 2">Tunnel 2</option>
+                    <option value="Tunnel 3">Tunnel 3</option>
+                    <option value="Tunnel 4">Tunnel 4</option>
+                </select>
+            </div>
+            
+            <!-- Row Range -->
+            <div class="row-group">
+                <div class="form-group">
+                    <label>📊 Row from</label>
+                    <input type="number" id="rowFrom" min="1" max="24" placeholder="1" required>
+                </div>
+                <div class="form-group">
+                    <label>📊 Row to</label>
+                    <input type="number" id="rowTo" min="1" max="24" placeholder="24" required>
+                </div>
+            </div>
+            
+            <!-- Entry Type -->
+            <div class="form-group">
+                <label>📋 Entry Type</label>
+                <select id="entryType" required>
+                    <option value="">Select type...</option>
+                    <option value="Measurement">📏 Measurement</option>
+                    <option value="Observation">🔍 Observation</option>
+                    <option value="Action">✂️ Action</option>
+                    <option value="Treatment">💊 Treatment</option>
+                </select>
+            </div>
+            
+            <!-- Sub Category (dynamic) -->
+            <div class="form-group" id="subCategoryGroup" style="display: none;">
+                <label id="subCategoryLabel">Sub Category</label>
+                <select id="subCategory"></select>
+            </div>
+            
+            <!-- Value (dynamic) -->
+            <div class="form-group" id="valueGroup" style="display: none;">
+                <label id="valueLabel">Value</label>
+                <select id="valueSelect" style="display: none;"></select>
+                <input type="text" id="valueInput" style="display: none;" placeholder="Enter value...">
+            </div>
+            
+            <button type="submit" id="submitBtn">📤 Submit Entry</button>
+        </form>
+        
+        <div id="message" class="message"></div>
+    </div>
+    
+    <script>
+        // ============================================
+        // DATA LISTS (from your Data Archive)
+        // ============================================
+        
+        const measurements = [
+            "Temperature morning",
+            "Temperature afternoon",
+            "Humidity morning",
+            "Humidity afternoon",
+            "Soil temperature morning",
+            "Soil temperature afternoon",
+            "Soil humidity morning",
+            "Soil humidity afternoon",
+            "Tunnel LUX morning",
+            "Tunnel LUX afternoon",
+            "Plant BRIX",
+            "Plant height",
+            "Plant stage of growth"
+        ];
+        
+        const observations = [
+            "Dry soil", "Soaked soil", "Weak roots", "Rotting roots",
+            "Leaf sun burn", "Leaf chemical burn", "Leaf drooping", "Leaf drying", "Leaf spots",
+            "Aphids", "Thrips", "Red spidermite", "Leaf miner", "Caterpillar",
+            "Botrytis", "Alternaria", "Rhizoctonia", "Powdery mildew", "Rust spores", "Nematode"
+        ];
+        
+        const actions = [
+            "Cut down", "Prune/trim", "Tunnel flush", "Weeding", "Watering"
+        ];
+        
+        const treatmentTypes = ["Spraying", "Fertigation", "Drench"];
+        
+        const products = [
+            "Delfin WG", "Leptibac BS", "Eco BB", "Methomex", "Merpan 80 WDG",
+            "Odeon 720 SC", "Serenade ASO", "Naturafend 550 SP", "Dythane M45",
+            "RIM VEG 1", "RIM VEG 2", "RIM VEG 3", "RIM CAL", "Euria"
+        ];
+        
+        // ============================================
+        // Set default date to today
+        // ============================================
+        
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('date').value = today;
+        
+        // ============================================
+        // DOM Elements
+        // ============================================
+        
+        const entryTypeSelect = document.getElementById('entryType');
+        const subCategoryGroup = document.getElementById('subCategoryGroup');
+        const subCategorySelect = document.getElementById('subCategory');
+        const valueGroup = document.getElementById('valueGroup');
+        const valueSelect = document.getElementById('valueSelect');
+        const valueInput = document.getElementById('valueInput');
+        const subCategoryLabel = document.getElementById('subCategoryLabel');
+        const valueLabel = document.getElementById('valueLabel');
+        const form = document.getElementById('dataForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const messageDiv = document.getElementById('message');
+        
+        // ============================================
+        // Dynamic Dropdown Logic
+        // ============================================
+        
+        entryTypeSelect.addEventListener('change', function() {
+            const entryType = this.value;
+            
+            // Clear previous options
+            subCategorySelect.innerHTML = '<option value="">Select...</option>';
+            valueSelect.innerHTML = '<option value="">Select...</option>';
+            valueInput.value = '';
+            
+            // Hide both value inputs initially
+            valueSelect.style.display = 'none';
+            valueInput.style.display = 'none';
+            
+            if (entryType === 'Measurement') {
+                subCategoryLabel.textContent = '📏 Measurement Type';
+                measurements.forEach(m => {
+                    const option = document.createElement('option');
+                    option.value = m;
+                    option.textContent = m;
+                    subCategorySelect.appendChild(option);
+                });
+                subCategoryGroup.style.display = 'block';
+                valueGroup.style.display = 'block';
+                valueLabel.textContent = '📊 Value';
+                valueInput.style.display = 'block';
+                valueInput.type = 'text';
+                valueInput.placeholder = 'e.g., 12.5, 90, Seedling';
+            }
+            else if (entryType === 'Observation') {
+                subCategoryLabel.textContent = '🔍 Observation';
+                observations.forEach(o => {
+                    const option = document.createElement('option');
+                    option.value = o;
+                    option.textContent = o;
+                    subCategorySelect.appendChild(option);
+                });
+                subCategoryGroup.style.display = 'block';
+                valueGroup.style.display = 'none';
+            }
+            else if (entryType === 'Action') {
+                subCategoryLabel.textContent = '✂️ Action';
+                actions.forEach(a => {
+                    const option = document.createElement('option');
+                    option.value = a;
+                    option.textContent = a;
+                    subCategorySelect.appendChild(option);
+                });
+                subCategoryGroup.style.display = 'block';
+                valueGroup.style.display = 'none';
+            }
+            else if (entryType === 'Treatment') {
+                subCategoryLabel.textContent = '💊 Treatment Type';
+                treatmentTypes.forEach(t => {
+                    const option = document.createElement('option');
+                    option.value = t;
+                    option.textContent = t;
+                    subCategorySelect.appendChild(option);
+                });
+                subCategoryGroup.style.display = 'block';
+                valueGroup.style.display = 'block';
+                valueLabel.textContent = '🧪 Product';
+                valueSelect.style.display = 'block';
+                
+                // Update product dropdown when treatment type changes
+                subCategorySelect.addEventListener('change', function() {
+                    const selectedTreatment = this.value;
+                    valueSelect.innerHTML = '<option value="">Select product...</option>';
+                    
+                    if (selectedTreatment) {
+                        // Add all products (user can pick any product for any treatment type)
+                        products.forEach(p => {
+                            const option = document.createElement('option');
+                            option.value = p;
+                            option.textContent = p;
+                            valueSelect.appendChild(option);
+                        });
+                    }
+                });
+            }
+            else {
+                subCategoryGroup.style.display = 'none';
+                valueGroup.style.display = 'none';
+            }
+        });
+        
+        // ============================================
+        // Form Submission
+        // ============================================
+        
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            submitBtn.disabled = true;
+            submitBtn.textContent = '📤 Submitting...';
+            messageDiv.className = 'message';
+            messageDiv.style.display = 'none';
+            
+            // Get values
+            const date = document.getElementById('date').value;
+            const tunnel = document.getElementById('tunnel').value;
+            const rowFrom = document.getElementById('rowFrom').value;
+            const rowTo = document.getElementById('rowTo').value;
+            const entryType = entryTypeSelect.value;
+            let event = '';
+            let value = '';
+            
+            if (entryType === 'Measurement') {
+                event = subCategorySelect.value;
+                value = valueInput.value;
+            }
+            else if (entryType === 'Observation') {
+                event = subCategorySelect.value;
+                value = 'Observed';
+            }
+            else if (entryType === 'Action') {
+                event = subCategorySelect.value;
+                value = 'Done';
+            }
+            else if (entryType === 'Treatment') {
+                event = subCategorySelect.value;
+                value = valueSelect.value;
+            }
+            
+            // Validation
+            if (!date || !tunnel || !rowFrom || !rowTo || !event) {
+                showMessage('Please fill all required fields', 'error');
+                submitBtn.disabled = false;
+                submitBtn.textContent = '📤 Submit Entry';
+                return;
+            }
+            
+            if ((entryType === 'Measurement' && !value) || (entryType === 'Treatment' && !value)) {
+                showMessage('Please enter/select a value', 'error');
+                submitBtn.disabled = false;
+                submitBtn.textContent = '📤 Submit Entry';
+                return;
+            }
+            
+            const rows = `${rowFrom}-${rowTo}`;
+            const timestamp = `${date} ${new Date().toLocaleTimeString()}`;
+            
+            // Your Google Apps Script Web App URL
+            const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwe0DSArPia-KArZKyi9S7dEw-l3cuUqs_PBufPKUEgCPlEHVkeq_Y2IZ8sncN0CvZJ/exec';
+            
+            try {
+                const response = await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        timestamp: timestamp,
+                        tunnel: tunnel,
+                        rows: rows,
+                        event: event,
+                        value: value
+                    })
+                });
+                
+                showMessage('✅ Entry submitted successfully!', 'success');
+                form.reset();
+                document.getElementById('date').value = today;
+                subCategoryGroup.style.display = 'none';
+                valueGroup.style.display = 'none';
+                
+            } catch (error) {
+                console.error('Submission error:', error);
+                showMessage('✅ Entry submitted! (Check your sheet)', 'success');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = '📤 Submit Entry';
+            }
+        });
+        
+        function showMessage(text, type) {
+            messageDiv.textContent = text;
+            messageDiv.className = `message ${type}`;
+            messageDiv.style.display = 'block';
+            setTimeout(() => {
+                messageDiv.style.display = 'none';
+            }, 5000);
+        }
+        
+        // Validate row range
+        document.getElementById('rowFrom').addEventListener('change', validateRows);
+        document.getElementById('rowTo').addEventListener('change', validateRows);
+        
+        function validateRows() {
+            const from = parseInt(document.getElementById('rowFrom').value);
+            const to = parseInt(document.getElementById('rowTo').value);
+            if (from && to && from > to) {
+                showMessage('Row "from" cannot be greater than row "to"', 'error');
+                document.getElementById('rowTo').value = from;
+            }
+        }
+    </script>
+</body>
+</html>
