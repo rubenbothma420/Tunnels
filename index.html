@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Farm Tracker</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #0d0f12;
+      color: #e2e8f0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      min-height: 100vh;
+      padding: 20px 16px 60px;
+    }
+
+    .container {
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    .header-icon {
+      font-size: 44px;
+      margin-bottom: 8px;
+    }
+
+    .header h1 {
+      font-size: 20px;
+      font-weight: 600;
+      color: #4ade80;
+    }
+
+    .header p {
+      font-size: 12px;
+      color: #8892a4;
+      margin-top: 4px;
+    }
+
+    .card {
+      background: #1c2030;
+      border: 1px solid #2a2f3d;
+      border-radius: 12px;
+      padding: 18px;
+      margin-bottom: 14px;
+    }
+
+    .card-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #8892a4;
+      margin-bottom: 12px;
+    }
+
+    .tunnel-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .tunnel-btn {
+      padding: 12px 8px;
+      border-radius: 10px;
+      border: 1.5px solid #2a2f3d;
+      background: #151820;
+      color: #8892a4;
+      font-size: 13px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s;
+    }
+
+    .tunnel-btn:active {
+      border-color: #4ade80;
+      background: rgba(74, 222, 128, 0.1);
+      color: #4ade80;
+    }
+
+    .row-inputs {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .row-input {
+      flex: 1;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1.5px solid #2a2f3d;
+      background: #151820;
+      color: #e2e8f0;
+      font-size: 16px;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .row-sep {
+      color: #4b5263;
+      font-weight: 600;
+    }
+
+    .event-group {
+      margin-bottom: 16px;
+    }
+
+    .group-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: #8892a4;
+      margin-bottom: 8px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #2a2f3d;
+    }
+
+    .event-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .event-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1.5px solid #2a2f3d;
+      background: #151820;
+      color: #e2e8f0;
+      font-size: 14px;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.15s;
+    }
+
+    .event-btn:active {
+      border-color: #38bdf8;
+      background: rgba(56, 189, 248, 0.1);
+    }
+
+    .event-emoji {
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .input-field {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1.5px solid #2a2f3d;
+      background: #151820;
+      color: #e2e8f0;
+      font-size: 16px;
+    }
+
+    .input-field:focus {
+      outline: none;
+      border-color: #4ade80;
+    }
+
+    .input-field option {
+      background: #1c2030;
+      color: #e2e8f0;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 14px;
+      border-radius: 10px;
+      border: none;
+      background: #4ade80;
+      color: #0d0f12;
+      font-weight: 600;
+      font-size: 15px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .submit-btn:active {
+      background: #86efac;
+    }
+
+    .submit-btn:disabled {
+      background: #4b5263;
+      color: #8892a4;
+      cursor: not-allowed;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 13px;
+      z-index: 999;
+      transition: transform 0.3s;
+      white-space: nowrap;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .toast.success {
+      background: #4ade80;
+      color: #0d0f12;
+    }
+
+    .toast.error {
+      background: #f87171;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <div class="header-icon">🌸</div>
+    <h1>Farm Tracker</h1>
+    <p>Data Entry</p>
+  </div>
+
+  <!-- Tunnel -->
+  <div class="card" id="card-tunnel">
+    <div class="card-label">🏗️ Select Tunnel</div>
+    <div class="tunnel-grid" id="tunnel-grid"></div>
+  </div>
+
+  <!-- Rows -->
+  <div class="card hidden" id="card-rows">
+    <div class="card-label">🌿 Row Range</div>
+    <div class="row-inputs">
+      <input type="number" class="row-input" id="row-from" min="1" max="24" placeholder="1" inputmode="numeric" />
+      <span class="row-sep">—</span>
+      <input type="number" class="row-input" id="row-to" min="1" max="24" placeholder="24" inputmode="numeric" />
+    </div>
+  </div>
+
+  <!-- Event -->
+  <div class="card hidden" id="card-event">
+    <div class="card-label">📋 Event Type</div>
+
+    <div class="event-group">
+      <div class="group-title">📊 Measurements</div>
+      <div class="event-list" id="group-measurements"></div>
+    </div>
+
+    <div class="event-group">
+      <div class="group-title">🔍 Observations</div>
+      <div class="event-list" id="group-observations"></div>
+    </div>
+
+    <div class="event-group">
+      <div class="group-title">⚙️ Actions</div>
+      <div class="event-list" id="group-actions"></div>
+    </div>
+
+    <div class="event-group">
+      <div class="group-title">💊 Treatments</div>
+      <div class="event-list" id="group-treatments"></div>
+    </div>
+  </div>
+
+  <!-- Value -->
+  <div class="card hidden" id="card-value">
+    <div class="card-label">✏️ Value</div>
+    <div id="value-container"></div>
+  </div>
+
+  <!-- Date -->
+  <div class="card hidden" id="card-date">
+    <div class="card-label">📅 Date</div>
+    <input type="date" class="input-field" id="entry-date" />
+  </div>
+
+  <!-- Submit -->
+  <button class="submit-btn hidden" id="submit-btn">✅ Submit</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbwTx00uJGELKhKjyTgcaR0xnUBeZvUMKxwKgHyS_vUI89Amgp0ESr2ha0mUpwp3UuyxzA/exec";
+
+  const TUNNELS = [1, 2, 3, 4, 5, 6];
+
+  const DATA = {
+    measurements: [
+      { name: "Tunnel Temp Morning", emoji: "🌡️", event: "Tunnel temperature morning", type: "number" },
+      { name: "Tunnel Temp Afternoon", emoji: "🌡️", event: "Tunnel temperature afternoon", type: "number" },
+      { name: "Tunnel Humidity Morning", emoji: "💧", event: "Tunnel humidity morning", type: "number" },
+      { name: "Tunnel Humidity Afternoon", emoji: "💧", event: "Tunnel humidity afternoon", type: "number" },
+      { name: "Soil Temp Morning", emoji: "🌱", event: "Soil temperature morning", type: "number" },
+      { name: "Soil Temp Afternoon", emoji: "🌱", event: "Soil temperature afternoon", type: "number" },
+      { name: "Soil Humidity Morning", emoji: "🪣", event: "Soil humidity morning", type: "number" },
+      { name: "Soil Humidity Afternoon", emoji: "🪣", event: "Soil humidity afternoon", type: "number" },
+      { name: "Tunnel LUX Morning", emoji: "☀️", event: "Tunnel LUX morning", type: "number" },
+      { name: "Tunnel LUX Afternoon", emoji: "🌤️", event: "Tunnel LUX afternoon", type: "number" },
+      { name: "Plant BRIX", emoji: "🍬", event: "Plant BRIX", type: "number" },
+      { name: "Plant Height", emoji: "📏", event: "Plant height", type: "number" },
+      { name: "Plant Stage", emoji: "🌿", event: "Plant stage of growth", type: "number" }
+    ],
+    observations: [
+      { name: "Discovered", emoji: "🔴", event: "Observation discovered", type: "select",
+        options: ["Dry soil","Soaked soil","Weak roots","Rotting roots","Leaf sun burn","Leaf chemical burn","Leaf drooping","Leaf drying","Leaf spots","Aphids","Thrips","Red spidermite","Leaf miner","Botrytis","Caterpillar","Alternaria","Rhizoctonia","Powdery mildew","Rust spores","Nematode"] },
+      { name: "Resolved", emoji: "✅", event: "Observation resolved", type: "select",
+        options: ["Dry soil","Soaked soil","Weak roots","Rotting roots","Leaf sun burn","Leaf chemical burn","Leaf drooping","Leaf drying","Leaf spots","Aphids","Thrips","Red spidermite","Leaf miner","Botrytis","Caterpillar","Alternaria","Rhizoctonia","Powdery mildew","Rust spores","Nematode"] }
+    ],
+    actions: [
+      { name: "Cut Down", emoji: "✂️", event: "Action", type: "fixed", value: "Cut down" },
+      { name: "Prune / Trim", emoji: "🌿", event: "Action", type: "fixed", value: "Prune/trim" },
+      { name: "Tunnel Flush", emoji: "🚿", event: "Action", type: "fixed", value: "Tunnel flush" },
+      { name: "Weeding", emoji: "🧹", event: "Action", type: "fixed", value: "Weeding" },
+      { name: "Watering", emoji: "💦", event: "Action", type: "fixed", value: "Watering" }
+    ],
+    treatments: [
+      { name: "Treatment Spray", emoji: "🧴", event: "Treatment spray", type: "select",
+        options: ["Delfin WG","Leptibac BS","Eco BB","Methomex","Merpan 80 WDG","Saturate","Odeon 720 SC","Serenade ASO","Naturafend 550 SP","Dythane M45","Euria","RIM VEG 1","RIM VEG 2","RIM VEG 3","RIM CAL"] },
+      { name: "Treatment Fertigate", emoji: "🌊", event: "Treatment fertigate", type: "select",
+        options: ["Delfin WG","Leptibac BS","Eco BB","Methomex","Merpan 80 WDG","Saturate","Odeon 720 SC","Serenade ASO","Naturafend 550 SP","Dythane M45","Euria","RIM VEG 1","RIM VEG 2","RIM VEG 3","RIM CAL"] },
+      { name: "Treatment Drench", emoji: "🪣", event: "Treatment drench", type: "select",
+        options: ["Delfin WG","Leptibac BS","Eco BB","Methomex","Merpan 80 WDG","Saturate","Odeon 720 SC","Serenade ASO","Naturafend 550 SP","Dythane M45","Euria","RIM VEG 1","RIM VEG 2","RIM VEG 3","RIM CAL"] }
+    ]
+  };
+
+  let selected = {
+    tunnel: null,
+    event: null
+  };
+
+  function init() {
+    // Tunnels
+    const tunnelGrid = document.getElementById("tunnel-grid");
+    TUNNELS.forEach(n => {
+      const btn = document.createElement("button");
+      btn.className = "tunnel-btn";
+      btn.textContent = `🏗️ ${n}`;
+      btn.onclick = () => selectTunnel(n);
+      tunnelGrid.appendChild(btn);
+    });
+
+    // Events
+    buildEventGroup("group-measurements", DATA.measurements);
+    buildEventGroup("group-observations", DATA.observations);
+    buildEventGroup("group-actions", DATA.actions);
+    buildEventGroup("group-treatments", DATA.treatments);
+
+    // Today's date
+    const today = new Date().toISOString().split("T")[0];
+    document.getElementById("entry-date").value = today;
+
+    // Row input listeners
+    ["row-from", "row-to"].forEach(id => {
+      document.getElementById(id).addEventListener("input", checkRowsReady);
+    });
+
+    document.getElementById("submit-btn").addEventListener("click", submitEntry);
+  }
+
+  function buildEventGroup(containerId, items) {
+    const container = document.getElementById(containerId);
+    items.forEach(item => {
+      const btn = document.createElement("button");
+      btn.className = "event-btn";
+      btn.innerHTML = `<span class="event-emoji">${item.emoji}</span>${item.name}`;
+      btn.onclick = () => selectEvent(item);
+      container.appendChild(btn);
+    });
+  }
+
+  function selectTunnel(n) {
+    selected.tunnel = n;
+    show("card-rows");
+  }
+
+  function checkRowsReady() {
+    const from = document.getElementById("row-from").value;
+    const to = document.getElementById("row-to").value;
+    if (from && to) {
+      show("card-event");
+    }
+  }
+
+  function selectEvent(item) {
+    selected.event = item;
+    buildValueField(item);
+    show("card-value");
+    show("card-date");
+    show("submit-btn");
+  }
+
+  function buildValueField(item) {
+    const container = document.getElementById("value-container");
+    container.innerHTML = "";
+
+    if (item.type === "number") {
+      const input = document.createElement("input");
+      input.className = "input-field";
+      input.type = "number";
+      input.id = "entry-value";
+      input.placeholder = "Enter value";
+      input.inputMode = "decimal";
+      input.step = "0.1";
+      container.appendChild(input);
+    } else if (item.type === "select") {
+      const select = document.createElement("select");
+      select.className = "input-field";
+      select.id = "entry-value";
+      select.innerHTML = `<option value="">Select...</option>`;
+      item.options.forEach(opt => {
+        select.innerHTML += `<option value="${opt}">${opt}</option>`;
+      });
+      container.appendChild(select);
+    } else if (item.type === "fixed") {
+      const input = document.createElement("input");
+      input.className = "input-field";
+      input.type = "text";
+      input.id = "entry-value";
+      input.value = item.value;
+      input.readOnly = true;
+      input.style.opacity = "0.6";
+      container.appendChild(input);
+    }
+  }
+
+  function show(id) {
+    document.getElementById(id).classList.remove("hidden");
+  }
+
+  async function submitEntry() {
+    const from = document.getElementById("row-from").value;
+    const to = document.getElementById("row-to").value;
+    const value = document.getElementById("entry-value")?.value;
+    const date = document.getElementById("entry-date").value;
+
+    if (!selected.tunnel || !from || !to || !selected.event || !value || !date) {
+      showToast("Fill all fields", "error");
+      return;
+    }
+
+    const rows = from === to ? from : `${from}-${to}`;
+    const btn = document.getElementById("submit-btn");
+    btn.disabled = true;
+    btn.textContent = "Submitting...";
+
+    try {
+      const response = await fetch(GAS_URL, {
+        method: "POST",
+        body: JSON.stringify({
+          timestamp: date,
+          tunnel: selected.tunnel,
+          rows: rows,
+          event: selected.event.event,
+          value: value
+        })
+      });
+
+      const text = await response.text();
+      console.log("Response:", text);
+
+      showToast("✅ Submitted!", "success");
+      resetForm();
+    } catch (err) {
+      console.error("Error:", err);
+      showToast("Error: " + err.message, "error");
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "✅ Submit";
+    }
+  }
+
+  function resetForm() {
+    selected = { tunnel: null, event: null };
+    document.getElementById("tunnel-grid").querySelectorAll(".tunnel-btn").forEach(b => b.classList.remove("active"));
+    document.getElementById("row-from").value = "";
+    document.getElementById("row-to").value = "";
+    document.getElementById("value-container").innerHTML = "";
+    const today = new Date().toISOString().split("T")[0];
+    document.getElementById("entry-date").value = today;
+    ["card-rows", "card-event", "card-value", "card-date", "submit-btn"].forEach(id => {
+      document.getElementById(id).classList.add("hidden");
+    });
+  }
+
+  function showToast(msg, type) {
+    const toast = document.getElementById("toast");
+    toast.textContent = msg;
+    toast.className = `toast ${type}`;
+    toast.classList.add("show");
+    setTimeout(() => toast.classList.remove("show"), 2500);
+  }
+
+  init();
+</script>
+</body>
+</html>
